@@ -45,12 +45,12 @@ with tf.Session(graph=train_graph) as sess:
     for epoch in range(EPOCHS):
         iteration = 1
         total_loss = 0
-        batch_gen = generate_batches(words_to_int, int_to_words, BATCH_SIZE, WINDOW_SIZE)
+        batch_gen = generate_batches(train_set, int_to_words, BATCH_SIZE, WINDOW_SIZE)
         start_time = time.time()
         for input, target in batch_gen:
             feed_dict = {train_inputs: input, train_labels: np.array([target]).T}
-            loss, _ = sess.run([loss, optimizer], feed_dict=feed_dict)
-            total_loss += loss
+            curr_loss, _ = sess.run([loss, optimizer], feed_dict=feed_dict)
+            total_loss += curr_loss
             if iteration % 2000 == 0:
                 end_time = time.time()
                 print('Epoch: {}'.format(epoch + 1))

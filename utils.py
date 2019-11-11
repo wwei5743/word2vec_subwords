@@ -16,7 +16,7 @@ import time
 DATASET_URL = 'http://mattmahoney.net/dc/text8.zip'
 MYDIR = os.path.dirname(os.path.realpath(__file__))
 REJ_THRESHOLD = 1e-4
-HASHING_UB = 2000000
+HASHING_UB = 250000
 VOCAB_SIZE = HASHING_UB
 EMBEDDING_SIZE = 300
 BATCH_SIZE = 128
@@ -56,13 +56,15 @@ def text_preprocessing(words):
     trained_text = list()
     freq = Counter(words)
     total_count = len(words)
-    for word in words:
+    for index, word in enumerate(words):
         #Only include words that occurs more than 4 times
         if freq[word] >= 5:
             #Calculate subsampling probability
             discard_prob = 1 - np.sqrt(REJ_THRESHOLD / (freq[word] / total_count))
             if np.random.random() < 1 - discard_prob:
                 trained_text.append(word)
+        if index / total_count > 0.1:
+            break
     new_freq = Counter(trained_text)
     new_freq = new_freq.most_common(len(new_freq))
     words_to_int = {word[0]: index for index, word in enumerate(new_freq)}
