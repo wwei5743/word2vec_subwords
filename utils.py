@@ -17,6 +17,7 @@ DATASET_URL = 'http://mattmahoney.net/dc/text8.zip'
 MYDIR = os.path.dirname(os.path.realpath(__file__))
 REJ_THRESHOLD = 1e-4
 HASHING_UB = 2000000
+VOCAB_SIZE = HASHING_UB
 EMBEDDING_SIZE = 300
 BATCH_SIZE = 128
 EPOCHS = 5
@@ -25,6 +26,9 @@ hasher = pyhash.fnv1a_32()
 myhasher = lambda x : hasher(x) % HASHING_UB
 LB_NGRAM = 3
 UB_NGRAM = 6
+VALID_SIZE = 16
+VALID_WINDOW = 100
+VALID_EXAMPLES = np.random.choice(VALID_WINDOW, VALID_SIZE, replace=False)
 random.seed(time.clock())
 
 def download_dataset_tokenize(url):
@@ -63,7 +67,8 @@ def text_preprocessing(words):
     new_freq = new_freq.most_common(len(new_freq))
     words_to_int = {word[0]: index for index, word in enumerate(new_freq)}
     int_to_words = {index: word for word, index in words_to_int.items()}
-    return words_to_int, int_to_words
+    trained_text = [words_to_int[word] for word in trained_text]
+    return words_to_int, int_to_words, trained_text
 
 def generate_subwords():
     while True:

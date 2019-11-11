@@ -2,15 +2,14 @@ from utils import *
 import time 
 
 data = download_dataset_tokenize(DATASET_URL)
-words_to_int, int_to_words = text_preprocessing(data)
-train_set = [words_to_int[word] for word in data]
+words_to_int, int_to_words, train_set = text_preprocessing(data)
 train_graph = tf.Graph()
 
 with train_graph.as_default():
     #Placeholder for input and labels
     train_inputs = tf.placeholder(tf.int32, shape=[None])
     train_labels = tf.placeholder(tf.int32, shape=[None, None])
-    valid_dataset = tf.constant(VALID_EXAMPLES, dtypes=tf.int32)
+    valid_dataset = tf.constant(VALID_EXAMPLES)
     #Create embeddings for hidden layer
     embeddings = tf.Variable(tf.random_uniform([VOCAB_SIZE, EMBEDDING_SIZE], -1.0, 1.0))
     #Only care about input word vectors in the embedding
@@ -22,8 +21,8 @@ with train_graph.as_default():
                                       biases=softmax_biases,
                                       labels=train_labels,
                                       inputs=embed,
-                                      num_samples=100,
-                                #  num_samples=5*train_inputs.shape[0],
+                                      num_sampled=100,
+                                #  num_sampled=5*train_inputs.shape[0],
                                       num_classes=VOCAB_SIZE))
     #Backprop
     optimizer = tf.train.AdamOptimizer().minimize(loss)
@@ -32,7 +31,7 @@ with train_graph.as_default():
     #Calculate final word embedding
     word_vectors = tf.Variable(initial_value=tf.zeros([len(words_to_int), EMBEDDING_SIZE]))
     word_index = tf.placeholder(tf.int32)
-    summed_vectors = tf.placeholder(tf.int32, shape=[None])
+    summed_vectors = tf.placeholder(tf.float32, shape=[None])
     update_vector = tf.scatter_update(word_vectors, word_index, summed_vectors)
       # Compute the cosine similarity between minibatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(word_vectors), 1, keep_dims=True))
@@ -40,7 +39,8 @@ with train_graph.as_default():
     valid_embeddings = tf.nn.embedding_lookup(normalized_embeddings, valid_dataset)
     similarity = tf.matmul(valid_embeddings, normalized_embeddings, transpose_b=True)
 
-with tf.session(graph=train_graph) as sess:
+with tf.Session(graph=train_graph) as sess:
+    print('Start training')
     sess.run(tf.global_variables_initializer())
     for epoch in range(EPOCHS):
         iteration = 1
