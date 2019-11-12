@@ -31,7 +31,8 @@ with train_graph.as_default():
     #Calculate final word embedding
     word_vectors = tf.Variable(initial_value=tf.zeros([len(words_to_int), EMBEDDING_SIZE]))
     word_index = tf.placeholder(tf.int32)
-    summed_vectors = tf.placeholder(tf.float32, shape=[None])
+    subwords = tf.placeholder(tf.int32, shape=[None])
+    summed_vectors = tf.reduce_sum(tf.nn.embedding_lookup(embeddings, subwords), 0)
     update_vector = tf.scatter_update(word_vectors, word_index, summed_vectors)
     # Compute the cosine similarity between minibatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(word_vectors), 1, keep_dims=True))
@@ -60,17 +61,15 @@ with tf.Session(graph=train_graph) as sess:
                 total_loss = 0
                 start_time = time.time()
             iteration += 1
-    save_ckpt = saver.save(sess, 'text8.ckpt')
+    save_ckpt = saver.save(sess, './text8.ckpt')
     #Generate subword for each word and calculate the summed word vectors of all subwords
     subword_gen = generate_subwords()
     next(subword_gen)
     for word in words_to_int:
         subwords = subword_gen.send(word)
         next(subword_gen)
-        #Sum up word vectors of all subwords
-        summed_vectors = tf.reduce_sum(tf.nn.embedding_lookup(embeddings, subwords), 0)
         #Update the word embeddings
-        sess.run(update_vector, feed_dict={word_index:[words_to_int[word]], summed_vectors:summed_vectors})
+        sess.run(update_vector, feed_dict={word_index:[words_to_int[word]], subwords: subwords})
     final_embeddings = normalized_embeddings.eval()
 
 def plot_with_labels(low_dim_embs, labels, filename='tsne.png'):
