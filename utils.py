@@ -20,8 +20,9 @@ HASHING_UB = 250000
 VOCAB_SIZE = HASHING_UB
 EMBEDDING_SIZE = 300
 BATCH_SIZE = 128
-EPOCHS = 5
+EPOCHS = 3
 WINDOW_SIZE = 5
+TRAIN_PERCENT = 0.1
 hasher = pyhash.fnv1a_32()
 myhasher = lambda x : hasher(x) % HASHING_UB
 LB_NGRAM = 3
@@ -39,7 +40,8 @@ def download_dataset_tokenize(url):
         if zipfile.is_zipfile(filename):
             with zipfile.ZipFile(os.path.join(MYDIR, filename)) as fp:
                 data = tf.compat.as_str(fp.read(fp.namelist()[0])).split()
-        return data
+            train_data = data[:int(len(data) * TRAIN_PERCENT)]
+        return train_data
     try:
         r = requests.get(url)
         with open(os.path.join(MYDIR, filename), 'wb') as fp:
@@ -50,7 +52,8 @@ def download_dataset_tokenize(url):
     if zipfile.is_zipfile(filename):
         with zipfile.ZipFile(os.path.join(MYDIR, filename)) as fp:
             data = tf.compat.as_str(fp.read(fp.namelist()[0])).split()
-    return data
+    train_data = data[:int(len(data) * TRAIN_PERCENT)]
+    return train_data
 
 def text_preprocessing(words):
     trained_text = list()
@@ -63,8 +66,6 @@ def text_preprocessing(words):
             discard_prob = 1 - np.sqrt(REJ_THRESHOLD / (freq[word] / total_count))
             if np.random.random() < 1 - discard_prob:
                 trained_text.append(word)
-        if index / total_count > 0.1:
-            break
     new_freq = Counter(trained_text)
     new_freq = new_freq.most_common(len(new_freq))
     words_to_int = {word[0]: index for index, word in enumerate(new_freq)}

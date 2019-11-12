@@ -33,7 +33,7 @@ with train_graph.as_default():
     word_index = tf.placeholder(tf.int32)
     summed_vectors = tf.placeholder(tf.float32, shape=[None])
     update_vector = tf.scatter_update(word_vectors, word_index, summed_vectors)
-      # Compute the cosine similarity between minibatch examples and all embeddings.
+    # Compute the cosine similarity between minibatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(word_vectors), 1, keep_dims=True))
     normalized_embeddings = word_vectors / norm
     valid_embeddings = tf.nn.embedding_lookup(normalized_embeddings, valid_dataset)
@@ -43,7 +43,7 @@ with tf.Session(graph=train_graph) as sess:
     print('Start training')
     sess.run(tf.global_variables_initializer())
     for epoch in range(EPOCHS):
-        iteration = 1
+        iteration = 0
         total_loss = 0
         batch_gen = generate_batches(train_set, int_to_words, BATCH_SIZE, WINDOW_SIZE)
         start_time = time.time()
@@ -51,15 +51,16 @@ with tf.Session(graph=train_graph) as sess:
             feed_dict = {train_inputs: input, train_labels: np.array([target]).T}
             curr_loss, _ = sess.run([loss, optimizer], feed_dict=feed_dict)
             total_loss += curr_loss
-            if iteration % 2000 == 0:
+            if iteration != 0 and iteration % 1000 == 0:
                 end_time = time.time()
                 print('Epoch: {}'.format(epoch + 1))
                 print('Iteration: {}'.format(iteration))
-                print('Average loss: {}'.format(total_loss / 2000))
-                print('{} sec/batch'.format((end_time - start_time) / 2000))
+                print('Average loss: {}'.format(total_loss / 1000))
+                print('{} sec/batch'.format((end_time - start_time) / 1000))
                 total_loss = 0
                 start_time = time.time()
             iteration += 1
+    save_ckpt = saver.save(sess, 'text8.ckpt')
     #Generate subword for each word and calculate the summed word vectors of all subwords
     subword_gen = generate_subwords()
     next(subword_gen)
