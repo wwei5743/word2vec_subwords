@@ -27,7 +27,7 @@ with train_graph.as_default():
     #Backpropagation with Adam Optimizer
     optimizer = tf.train.AdamOptimizer().minimize(loss)
     #Backpropagation with SGD with step size = 
-    # optimizer = tf.train.GradientDescentOptimizer(0.025).minimizer(loss)
+    # optimizer = tf.train.GradientDescentOptimizer(0.05).minimizer(loss)
 
 with tf.Session(graph=train_graph) as sess:
     print('Start training')
