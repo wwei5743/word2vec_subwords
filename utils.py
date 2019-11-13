@@ -27,9 +27,6 @@ hasher = pyhash.fnv1a_32()
 myhasher = lambda x : hasher(x) % HASHING_UB
 LB_NGRAM = 3
 UB_NGRAM = 6
-VALID_SIZE = 16
-VALID_WINDOW = 100
-VALID_EXAMPLES = np.random.choice(VALID_WINDOW, VALID_SIZE, replace=False)
 random.seed(time.clock())
 
 def download_dataset_tokenize(url):
@@ -59,7 +56,7 @@ def text_preprocessing(words):
     trained_text = list()
     freq = Counter(words)
     total_count = len(words)
-    for index, word in enumerate(words):
+    for _, word in enumerate(words):
         #Only include words that occurs more than 4 times
         if freq[word] >= 5:
             #Calculate subsampling probability
@@ -106,16 +103,3 @@ def generate_batches(words_int, int_to_words, batch_size, window_size):
             for _ in range(len(subwords)):
                 target.extend(neighbors)
         yield input, target
-
-# data = download_dataset_tokenize(DATASET_URL)
-# data = data[:5]
-# print(data)
-# freq = Counter(data)
-# freq = freq.most_common(len(freq))
-# words_to_int = {word[0]: index for index, word in enumerate(freq)}
-# int_to_words = {index: word for word, index in words_to_int.items()}
-# words_int = [words_to_int[word] for word in data]
-# batches = generate_batches(words_int, int_to_words, 5, 3)
-# for input, target in batches:
-#     for x, y in zip(input, target):
-#         print(str(x), int_to_words[y])
