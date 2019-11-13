@@ -4,12 +4,14 @@ import pickle as pkl
 
 data = download_dataset_tokenize(DATASET_URL)
 words_to_int, int_to_words, train_set = text_preprocessing(data)
+num_words = len(words_to_int)
 train_graph = tf.Graph()
 
 with train_graph.as_default():
     #Placeholder for input and labels
     train_inputs = tf.placeholder(tf.int32, shape=[None])
     train_labels = tf.placeholder(tf.int32, shape=[None, None])
+    lr = tf.placeholder(tf.float32)
     #Create embeddings for hidden layer
     embeddings = tf.Variable(tf.random_uniform([VOCAB_SIZE, EMBEDDING_SIZE], -1.0, 1.0))
     #Only care about input word vectors in the embedding
@@ -25,7 +27,7 @@ with train_graph.as_default():
                                 #  num_sampled=5*train_inputs.shape[0],
                                       num_classes=VOCAB_SIZE))
     #Backpropagation with Adam Optimizer
-    optimizer = tf.train.AdamOptimizer().minimize(loss)
+    optimizer = tf.train.AdamOptimizer(learning_rate=lr).minimize(loss)
     #Backpropagation with SGD with step size = 
     # optimizer = tf.train.GradientDescentOptimizer(0.05).minimizer(loss)
 
@@ -37,8 +39,9 @@ with tf.Session(graph=train_graph) as sess:
         total_loss = 0
         batch_gen = generate_batches(train_set, int_to_words, BATCH_SIZE, WINDOW_SIZE)
         start_time = time.time()
+        learning_rate = 0.05 * (1 - (epoch / (num_words * EPOCHS)))
         for input, target in batch_gen:
-            feed_dict = {train_inputs: input, train_labels: np.array([target]).T}
+            feed_dict = {train_inputs: input, train_labels: np.array([target]).T, lr: learning_rate}
             curr_loss, _ = sess.run([loss, optimizer], feed_dict=feed_dict)
             total_loss += curr_loss
             if iteration != 0 and iteration % 1000 == 0:
