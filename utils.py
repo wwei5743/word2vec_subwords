@@ -16,13 +16,13 @@ import time
 DATASET_URL = 'http://mattmahoney.net/dc/text8.zip'
 MYDIR = os.path.dirname(os.path.realpath(__file__))
 REJ_THRESHOLD = 1e-4
-HASHING_UB = 250000
+HASHING_UB = 500000
 VOCAB_SIZE = HASHING_UB
 EMBEDDING_SIZE = 300
-BATCH_SIZE = 128
-EPOCHS = 3
+BATCH_SIZE = 400
+EPOCHS = 10
 WINDOW_SIZE = 5
-TRAIN_PERCENT = 0.1
+TRAIN_PERCENT = 0.2
 hasher = pyhash.fnv1a_32()
 myhasher = lambda x : hasher(x) % HASHING_UB
 LB_NGRAM = 3
