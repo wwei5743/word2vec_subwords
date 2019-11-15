@@ -12,11 +12,12 @@ import pyhash
 import math
 import random
 import time
+import torch    
 
 DATASET_URL = 'http://mattmahoney.net/dc/text8.zip'
 MYDIR = os.path.dirname(os.path.realpath(__file__))
 REJ_THRESHOLD = 1e-4
-HASHING_UB = 500000
+HASHING_UB = 250000
 VOCAB_SIZE = HASHING_UB
 EMBEDDING_SIZE = 300
 BATCH_SIZE = 400
@@ -103,3 +104,14 @@ def generate_batches(words_int, int_to_words, batch_size, window_size):
             for _ in range(len(subwords)):
                 target.extend(neighbors)
         yield input, target
+
+def spearman(output,target):
+    x = output
+    y = target
+
+    vx = x - torch.mean(x)
+    vy = y - torch.mean(y)
+
+    rho = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx ** 2)) * torch.sqrt(torch.sum(vy ** 2)))
+
+    return float(rho)
